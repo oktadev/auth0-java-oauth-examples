@@ -267,7 +267,14 @@ mp.jwt.verify.publickey.location=${quarkus.oidc.auth-server-url}/.well-known/jwk
 mp.jwt.verify.issuer=${quarkus.oidc.auth-server-url}
 ----
 
-. Run the app and verify you can access it with an access token.
+. Run the app:
++
+[source,shell]
+----
+mvn quarkus:dev
+----
+
+. Verify you can access it with an access token.
 +
 [source,shell]
 ----
