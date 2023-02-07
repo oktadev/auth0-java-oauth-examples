@@ -3,9 +3,9 @@
 :toc: macro
 :source-highlighter: highlight.js
 
-= Spring Boot + Spring Security OAuth Demo
+= Java OAuth Demos
 
-Today, I'll show you how to build a Spring Boot app and secure it with OAuth 2.0.
+Today, I'll show you how to build a Spring Boot app and secure it with OAuth 2.0. Then, I'll show you how to create resource servers with Quarkus and Micronaut.
 
 **Prerequisites**:
 
@@ -15,15 +15,6 @@ Today, I'll show you how to build a Spring Boot app and secure it with OAuth 2.0
 - https://auth0.com/signup[Auth0 Account]
 
 toc::[]
-
-////
-[TIP]
-====
-The brackets at the end of some steps indicate the IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
-
-You can also expand the file names to see the full code.
-====
-////
 
 == Create a Spring Boot app using Spring Initializr
 
@@ -37,7 +28,7 @@ https start.spring.io/starter.tgz \
 | tar -xzvf -
 ----
 
-== Configure Spring Security
+=== Configure Spring Security
 
 . Ensure it starts and you can log in as `user`.
 +
@@ -67,7 +58,7 @@ class HelloController {
 }
 ----
 
-== Test your Spring Boot Resource Server
+=== Test your Spring Boot Resource Server
 
 . Run the app using Gradle.
 +
@@ -112,7 +103,7 @@ http :8080/hello "Authorization: Bearer $TOKEN"
 
 . Stop the resource server using kbd:[Ctrl+C].
 
-== Add OpenID Authentication to Spring Boot
+=== Add OpenID Connect Authentication to Spring Boot
 
 . Create a `SecurityConfiguration.java` file that contains the same defaults as Spring Security.
 +
