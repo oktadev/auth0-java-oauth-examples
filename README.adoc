@@ -48,7 +48,7 @@ Start the app:
 
 [source,shell]
 ----
-./mvnw spring-boot:run
+mvn spring-boot:run
 ----
 
 Log in at `http://localhost:8080`.
@@ -89,7 +89,7 @@ Run the app:
 
 [source,shell]
 ----
-./mvnw quarkus:dev
+mvn quarkus:dev
 ----
 
 Verify you can access it with an access token.
