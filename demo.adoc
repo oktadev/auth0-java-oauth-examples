@@ -258,7 +258,7 @@ http :8080/hello "Authorization: Bearer $TOKEN"
 
 . You can inspect your access token at https://jwt.io[jwt.io].
 
-== Quarkus
+== Create a Resource Server with Quarkus
 
 . Clone the Okta Quarkus Sample:
 +
@@ -283,7 +283,7 @@ mp.jwt.verify.issuer=${quarkus.oidc.auth-server-url}
 http :8080/hello "Authorization: Bearer $TOKEN"
 ----
 
-== Micronaut
+== Create a Resource Server with Micronaut
 
 . Clone the Okta Micronaut Sample:
 +

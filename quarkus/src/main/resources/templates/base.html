@@ -1,0 +1,45 @@
+<html>
+<head>
+    <title>{#insert title}Default Title{/}</title>
+
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body id="samples">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- todo: figure out how to get the path from Qute and add 'active' to the links below -->
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="/">Home</a>
+                </li>
+                {#if user}
+                <li class="nav-item">
+                    <li><a class="nav-link" id="profile-link" href="/profile">My Profile</a></li>
+                </li>
+                {/if}
+            </ul>
+            {#if user}
+            <form method="post" action="/logout" class="d-flex mb-2 mb-lg-0">
+                <button id="logout-button" type="submit" class="btn btn-danger">Logout</button>
+            </form>
+            {/if}
+        </div>
+    </div>
+</nav>
+
+<div id="content" class="container pt-3">
+    {#insert body}empty page{/}
+</div>
+</body>
+</html>

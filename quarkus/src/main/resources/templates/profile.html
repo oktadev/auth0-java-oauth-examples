@@ -1,0 +1,33 @@
+{#include base}
+{#title}User Profile{/title}
+{#body}
+
+    <div>
+        <h2>My Profile</h2>
+        <p>Hello, <span>{claims.name}</span>. Below is the information that was read with your <a href="https://developer.okta.com/docs/reference/api/oidc/#get-user-information">OIDC user information</a>.
+        </p>
+        <p>This route is protected with the annotation <code>@Authenticated</code>, which will ensure that this page cannot be accessed until you have authenticated.</p>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Claim</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        {#each claims}
+            <!-- don't show raw token because it makes the table too wide -->
+            {#if it.key != 'raw_token'}
+            <tr>
+                <td>{it.key}</td>
+                <td>{it.value}</td>
+            </tr>
+            {/if}
+        {/each}
+        </tbody>
+    </table>
+{/body}
+{/include}
