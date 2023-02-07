@@ -1,0 +1,127 @@
+= Java OAuth Examples
+
+See link:demo.adoc[this demo script] to learn how these apps were created.
+
+== Prerequisites:
+
+- https://sdkman.io/[Java 17]
+- https://github.com/auth0/auth0-cli/releases/tag/v1.0.0-beta.1[Auth0 CLI 1.0.0-beta]+
+- https://httpie.org/doc#installation[HTTPie]
+- https://auth0.com/signup[Auth0 Account]
+
+== Get the Code
+
+Clone this repo to begin.
+
+[source,shell]
+----
+git clone https://github.com/oktadev/auth0-java-oauth-examples.git
+cd auth0-java-oauth-examples
+----
+
+== Configure Spring Boot
+
+Create an OIDC application using the Auth0 CLI.
+
+[source,shell]
+----
+auth0 apps create --reveal-secrets
+----
+
+- **Name**: `Spring Boot`
+- **Type**: Regular Web Application
+- **Allowed Callback URLs**: `\http://localhost:8080/login/oauth2/code/auth0`
+- **Allowed Logout URLs**: `\http://localhost:8080`
+
+Update `application.properties` to use these values.
+
+[source,properties]
+----
+spring.security.oauth2.client.provider.auth0.issuer-uri=https://<your-auth0-domain>/
+spring.security.oauth2.client.registration.auth0.client-id=<client-id>
+spring.security.oauth2.client.registration.auth0.client-secret=<client-secret>
+spring.security.oauth2.client.registration.auth0.scope=openid,profile,email
+auth0.audience=https://<your-auth0-domain>/api/v2/
+----
+
+Start the app:
+
+[source,shell]
+----
+./mvnw spring-boot:run
+----
+
+Log in at `http://localhost:8080`.
+
+=== API Access with OAuth 2.0
+
+Create an access token using Auth0's CLI:
+
+[source,shell]
+----
+auth0 test token -a https://<your-auth0-domain>/api/v2/
+----
+
+Set the access token as an environment variable:
+
+[source,shell]
+----
+TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCI6...
+----
+
+Access your resource server using HTTPie:
+
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
+
+== Configure Quarkus
+
+Update `quarkus/src/main/resources/application.properties` to use your Auth0 domain.
+
+[source,properties]
+----
+quarkus.oidc.auth-server-url=https://<your-auth0-domain>
+----
+
+Run the app:
+
+[source,shell]
+----
+./mvnw quarkus:dev
+----
+
+Verify you can access it with an access token.
+
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
+
+== Configure Micronaut
+
+Update `micronaut/src/main/resources/application.yml` to use your Auth0 domain.
+
+[source,yaml]
+----
+micronaut.security.token.jwt.signatures.jwks.auth0.url: https://<your-auth0-domain>/.well-known/jwks.json
+----
+
+Run the app:
+
+[source,shell]
+----
+mvn mn:run
+----
+
+Verify you can access it with an access token.
+
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
+
+== Learn More
+
+For more details on Java and OAuth, please read https://developer.okta.com/blog/2022/06/16/oauth-java[OAuth for Java Developers].

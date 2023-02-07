@@ -154,7 +154,7 @@ auth0 apps create --reveal-secrets
 
 . Update `application.properties` to include these values, removing any previous properties.
 +
-[source,shell]
+[source,properties]
 ----
 spring.security.oauth2.client.provider.auth0.issuer-uri=https://<your-auth0-domain>/
 spring.security.oauth2.client.registration.auth0.client-id=<client-id>
