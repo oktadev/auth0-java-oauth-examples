@@ -5,7 +5,7 @@
 
 = Java OAuth Demos
 
-Today, I'll show you how to build a Spring Boot app and secure it with OAuth 2.0. Then, I'll show you how to create resource servers with Quarkus and Micronaut.
+This demo shows how to build a Spring Boot app and secure it with OAuth 2.0. Then, it shows how to create resource servers with Quarkus and Micronaut.
 
 **Prerequisites**:
 
@@ -25,7 +25,7 @@ Use https://start.spring.io/[start.spring.io] to create a new Spring Boot projec
 https start.spring.io/starter.tgz \
   dependencies==web,oauth2-client,oauth2-resource-server \
   baseDir==spring-boot \
-| tar -xzvf -
+| tar -xzvf - && cd spring-boot
 ----
 
 === Configure Spring Security
