@@ -1,0 +1,315 @@
+:experimental:
+:commandkey: &#8984;
+:toc: macro
+:source-highlighter: highlight.js
+
+= Spring Boot + Spring Security OAuth Demo
+
+Today, I'll show you how to build a Spring Boot app and secure it with OAuth 2.0.
+
+**Prerequisites**:
+
+- https://sdkman.io/[Java 17]
+- https://github.com/auth0/auth0-cli/releases/tag/v1.0.0-beta.1[Auth0 CLI 1.0.0-beta]+
+- https://httpie.org/doc#installation[HTTPie]
+- https://auth0.com/signup[Auth0 Account]
+
+toc::[]
+
+////
+[TIP]
+====
+The brackets at the end of some steps indicate the IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
+
+You can also expand the file names to see the full code.
+====
+////
+
+== Create a Spring Boot app using Spring Initializr
+
+Use https://start.spring.io/[start.spring.io] to create a new Spring Boot project with OAuth dependencies.
+
+[source,shell]
+----
+https start.spring.io/starter.tgz \
+  dependencies==web,oauth2-client,oauth2-resource-server \
+  baseDir==spring-boot \
+| tar -xzvf -
+----
+
+== Configure Spring Security
+
+. Ensure it starts and you can log in as `user`.
++
+[source,shell]
+----
+./gradlew bootRun
+----
+
+. Add your Auth0 domain to `application.properties` to configure a resource server.
++
+[source,properties]
+----
+spring.security.oauth2.resourceserver.jwt.issuer-uri=https://<your-auth0-domain>/
+----
+
+. Add a `HelloController.java` file with the following code.
++
+[source,java]
+----
+@RestController
+class HelloController {
+
+    @GetMapping("/hello")
+    public String hello(Principal principal) {
+        return "Hello, " + principal.getName() + "!";
+    }
+}
+----
+
+== Test your Spring Boot Resource Server
+
+. Run the app using Gradle.
++
+[source,shell]
+----
+./gradlew bootRun
+----
+
+. Open a new terminal and use HTTPie to test the resource server.
++
+[source,shell]
+----
+http :8080/hello
+----
++
+You will get a 401 response.
+
+. Create an access token using Auth0's CLI:
++
+[source,shell]
+----
+auth0 test token -a https://<your-auth0-domain>/api/v2/
+----
+
+. Set the access token as an environment variable:
++
+[source,shell]
+----
+TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCI6...
+----
+
+. Access your resource server using HTTPie:
++
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
+
+. You should receive a 200 response with a message.
+
+  Hello, auth0|61bcbc76f64d4a0072af8a1d!
+
+. Stop the resource server using kbd:[Ctrl+C].
+
+== Add OpenID Authentication to Spring Boot
+
+. Create a `SecurityConfiguration.java` file that contains the same defaults as Spring Security.
++
+[source,java]
+----
+@Configuration
+public class SecurityConfiguration {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(authz -> authz.anyRequest().authenticated());
+        http.oauth2ResourceServer().jwt();
+        return http.build();
+    }
+}
+----
+
+. Confirm you can still access the `/hello` endpoint.
++
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
+
+. Modify the `SecurityFilterChain` bean to enable OIDC authentication.
++
+[source,java]
+----
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+      ...
+      http.oauth2Login();
+      ...
+  }
+----
+
+. Create an OIDC application using the Auth0 CLI.
++
+[source,shell]
+----
+auth0 apps create --reveal-secrets
+----
++
+- **Name**: `Spring Boot`
+- **Type**: Regular Web Application
+- **Allowed Callback URLs**: `\http://localhost:8080/login/oauth2/code/auth0`
+- **Allowed Logout URLs**: `\http://localhost:8080`
+
+. Update `application.properties` to include these values, removing any previous properties.
++
+[source,shell]
+----
+spring.security.oauth2.client.provider.auth0.issuer-uri=https://<your-auth0-domain>/
+spring.security.oauth2.client.registration.auth0.client-id=<client-id>
+spring.security.oauth2.client.registration.auth0.client-secret=<client-secret>
+spring.security.oauth2.client.registration.auth0.scope=openid,profile,email
+auth0.audience=https://<your-auth0-domain>/api/v2/
+----
+
+. If you start your app, it'll fail with the following error:
++
+[source,shell]
+----
+Method filterChain in com.example.demo.SecurityConfiguration required a bean of type
+  'org.springframework.security.oauth2.jwt.JwtDecoder' that could not be found.
+----
+
+. Add a JWT decoder bean that does audience validation.
++
+[source,java]
+----
+@Value("${auth0.audience}")
+private String audience;
+
+@Value("${spring.security.oauth2.client.provider.auth0.issuer-uri}")
+private String issuer;
+
+@Bean
+JwtDecoder jwtDecoder() {
+    NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuer);
+
+    OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
+    OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
+    OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+
+    jwtDecoder.setJwtValidator(withAudience);
+
+    return jwtDecoder;
+}
+----
+
+. Create an `AudienceValidator` class to validate JWTs.
++
+[source,java]
+----
+class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+    private final String audience;
+
+    AudienceValidator(String audience) {
+        this.audience = audience;
+    }
+
+    public OAuth2TokenValidatorResult validate(Jwt jwt) {
+        OAuth2Error error = new OAuth2Error("invalid_token", "The required audience is missing", null);
+
+        if (jwt.getAudience().contains(audience)) {
+            return OAuth2TokenValidatorResult.success();
+        }
+        return OAuth2TokenValidatorResult.failure(error);
+    }
+}
+----
+
+. Add a `HomeController` to display the user's name after they log in.
++
+[source,java]
+----
+@RestController
+class HomeController {
+
+    @GetMapping("/")
+    public String home(@AuthenticationPrincipal OidcUser user) {
+        return "Hello, " + user.getFullName() + "!";
+    }
+}
+----
+
+. Restart the server. Use kbd:[Ctrl+C] to stop it if it's running.
++
+[source,shell]
+----
+./gradlew bootRun
+----
+
+. Log in at `http://localhost:8080`.
+
+. Use HTTPie again to confirm your resource server still works.
++
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
+
+. You can inspect your access token at https://jwt.io[jwt.io].
+
+== Quarkus
+
+. Clone the Okta Quarkus Sample:
++
+[source,java]
+----
+git clone https://github.com/okta-samples/okta-quarkus-sample.git quarkus
+----
+
+. Update `application.properties` to update the public key location. Remove all other properties.
++
+[source,properties]
+----
+quarkus.oidc.auth-server-url=https://<your-auth0-domain>
+mp.jwt.verify.publickey.location=${quarkus.oidc.auth-server-url}/.well-known/jwks.json
+mp.jwt.verify.issuer=${quarkus.oidc.auth-server-url}
+----
+
+. Run the app and verify you can access it with an access token.
++
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
+
+== Micronaut
+
+. Clone the Okta Micronaut Sample:
++
+[source,java]
+----
+git clone https://github.com/okta-samples/okta-micronaut-sample.git micronaut
+----
+
+. Update `application.yml` to change the public key location. Remove all other properties.
++
+[source,yaml]
+----
+micronaut.security.token.jwt.enabled: true
+micronaut.security.token.jwt.signatures.jwks.auth0.url: https://<your-auth0-domain>/.well-known/jwks.json
+----
+
+. Run the app:
++
+[source,shell]
+----
+mvn mn:run
+----
+
+. Verify you can access it with an access token.
++
+[source,shell]
+----
+http :8080/hello "Authorization: Bearer $TOKEN"
+----
