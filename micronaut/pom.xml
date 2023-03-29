@@ -10,14 +10,14 @@
   <parent>
     <groupId>io.micronaut</groupId>
     <artifactId>micronaut-parent</artifactId>
-    <version>3.8.3</version>
+    <version>3.8.7</version>
   </parent>
 
   <properties>
     <packaging>jar</packaging>
     <jdk.version>11</jdk.version>
     <release.version>11</release.version>
-    <micronaut.version>3.4.3</micronaut.version>
+    <micronaut.version>3.8.7</micronaut.version>
     <exec.mainClass>com.example.Application</exec.mainClass>
     <micronaut.aot.enabled>true</micronaut.aot.enabled>
     <micronaut.aot.packageName>com.example.aot.generated</micronaut.aot.packageName>
