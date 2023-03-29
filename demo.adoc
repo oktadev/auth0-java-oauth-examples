@@ -37,6 +37,8 @@ https start.spring.io/starter.tgz \
 ./gradlew bootRun
 ----
 
+. Install the https://github.com/auth0/auth0-cli/releases[Auth0 CLI] and run `auth0 login` to get your domain. 
+
 . Add your Auth0 domain to `application.properties` to configure a resource server.
 +
 [source,properties]
