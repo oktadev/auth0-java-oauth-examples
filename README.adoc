@@ -78,11 +78,11 @@ http :8080/hello "Authorization: Bearer $TOKEN"
 
 == Configure Quarkus
 
-Update `quarkus/.env` to use your Auth0 domain.
+Update `quarkus/src/main/resources/application.properties` to use your Auth0 domain.
 
 [source,properties]
 ----
-ISSUER=https://<your-auth0-domain>
+quarkus.oidc.auth-server-url=https://<your-auth0-domain>
 ----
 
 Run the app:
