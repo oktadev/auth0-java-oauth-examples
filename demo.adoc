@@ -130,18 +130,6 @@ public class SecurityConfiguration {
 http :8080/hello "Authorization: Bearer $TOKEN"
 ----
 
-. Modify the `SecurityFilterChain` bean to enable OIDC authentication.
-+
-[source,java]
-----
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-      ...
-      http.oauth2Login();
-      ...
-  }
-----
-
 . Create an OIDC application using the Auth0 CLI.
 +
 [source,shell]
@@ -163,6 +151,18 @@ spring.security.oauth2.client.registration.auth0.client-id=<client-id>
 spring.security.oauth2.client.registration.auth0.client-secret=<client-secret>
 spring.security.oauth2.client.registration.auth0.scope=openid,profile,email
 auth0.audience=https://<your-auth0-domain>/api/v2/
+----
+
+. Modify the `SecurityFilterChain` bean to enable OIDC authentication.
++
+[source,java]
+----
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+      ...
+      http.oauth2Login();
+      ...
+  }
 ----
 
 . If you start your app, it'll fail with the following error:
