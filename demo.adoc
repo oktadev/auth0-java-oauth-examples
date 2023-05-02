@@ -10,7 +10,7 @@ This demo shows how to build a Spring Boot app and secure it with OAuth 2.0. The
 **Prerequisites**:
 
 - https://sdkman.io/[Java 17]
-- https://github.com/auth0/auth0-cli/releases/tag/v1.0.0-beta.1[Auth0 CLI 1.0.0-beta]+
+- https://github.com/auth0/auth0-cli#installation[Auth0 CLI 1.0.0]+
 - https://httpie.org/doc#installation[HTTPie]
 - https://auth0.com/signup[Auth0 Account]
 
@@ -37,7 +37,7 @@ https start.spring.io/starter.tgz \
 ./gradlew bootRun
 ----
 
-. Install the https://github.com/auth0/auth0-cli/releases[Auth0 CLI] and run `auth0 login` to get your domain. 
+. Install the https://github.com/auth0/auth0-cli/releases[Auth0 CLI] and run `auth0 login` to get your domain.
 
 . Add your Auth0 domain to `application.properties` to configure a resource server.
 +
@@ -172,6 +172,8 @@ auth0.audience=https://<your-auth0-domain>/api/v2/
 Method filterChain in com.example.demo.SecurityConfiguration required a bean of type
   'org.springframework.security.oauth2.jwt.JwtDecoder' that could not be found.
 ----
++
+TIP: If you'd rather not create a JWT decoder bean, you can use the https://github.com/okta/okta-spring-boot[Okta Spring Boot starter], which has built-in audience validation.
 
 . Add a JWT decoder bean that does audience validation.
 +

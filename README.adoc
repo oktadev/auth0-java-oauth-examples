@@ -5,7 +5,7 @@ See link:demo.adoc[this demo script] to learn how these apps were created.
 == Prerequisites:
 
 - https://sdkman.io/[Java 17]
-- https://github.com/auth0/auth0-cli/releases/tag/v1.0.0-beta.1[Auth0 CLI 1.0.0-beta]+
+- https://github.com/auth0/auth0-cli#installation[Auth0 CLI 1.0.0]+
 - https://httpie.org/doc#installation[HTTPie]
 - https://auth0.com/signup[Auth0 Account]
 
@@ -48,7 +48,7 @@ Start the app:
 
 [source,shell]
 ----
-mvn spring-boot:run
+gradle bootRun
 ----
 
 Log in at `http://localhost:8080`.
