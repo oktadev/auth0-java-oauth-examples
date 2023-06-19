@@ -5,7 +5,7 @@
 
 = Java OAuth Demos
 
-This demo shows how to build a Spring Boot app and secure it with OAuth 2.0. Then, it shows how to create resource servers with Quarkus and Micronaut.
+This demo shows how to build a Spring Boot app and secure it with OAuth 2.0 and OpenID Connect. Then, it shows how to create resource servers with Quarkus and Micronaut.
 
 **Prerequisites**:
 
@@ -23,10 +23,12 @@ Use https://start.spring.io/[start.spring.io] to create a new Spring Boot projec
 [source,shell]
 ----
 https start.spring.io/starter.tgz \
-  dependencies==web,oauth2-client,oauth2-resource-server \
+  dependencies==web,okta \
   baseDir==spring-boot \
 | tar -xzvf - && cd spring-boot
 ----
+
+NOTE: The https://github.com/okta/okta-spring-boot[Okta Spring Boot starter] includes `oauth2-client` and `oauth2-resource-server`.
 
 === Configure Spring Security
 
@@ -43,7 +45,8 @@ https start.spring.io/starter.tgz \
 +
 [source,properties]
 ----
-spring.security.oauth2.resourceserver.jwt.issuer-uri=https://<your-auth0-domain>/
+okta.oauth2.issuer=https://<your-auth0-domain>/
+okta.oauth2.audience=${okta.oauth2.issuer}api/v2/
 ----
 
 . Add a `HelloController.java` file with the following code.
@@ -107,118 +110,27 @@ http :8080/hello "Authorization: Bearer $TOKEN"
 
 === Add OpenID Connect Authentication to Spring Boot
 
-. Create a `SecurityConfiguration.java` file that contains the same defaults as Spring Security.
-+
-[source,java]
-----
-@Configuration
-public class SecurityConfiguration {
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(authz -> authz.anyRequest().authenticated());
-        http.oauth2ResourceServer().jwt();
-        return http.build();
-    }
-}
-----
-
-. Confirm you can still access the `/hello` endpoint.
-+
-[source,shell]
-----
-http :8080/hello "Authorization: Bearer $TOKEN"
-----
-
 . Create an OIDC application using the Auth0 CLI.
 +
 [source,shell]
 ----
-auth0 apps create --reveal-secrets
+auth0 apps create \
+  --name "Spring Boot" \
+  --description "Spring Boot Example" \
+  --type regular \
+  --callbacks http://localhost:8080/login/oauth2/code/okta \
+  --logout-urls http://localhost:8080 \
+  --reveal-secrets
 ----
-+
-- **Name**: `Spring Boot`
-- **Type**: Regular Web Application
-- **Allowed Callback URLs**: `\http://localhost:8080/login/oauth2/code/auth0`
-- **Allowed Logout URLs**: `\http://localhost:8080`
 
-. Update `application.properties` to include these values, removing any previous properties.
+. Update `application.properties` to include your client ID and client secret.
 +
 [source,properties]
 ----
-spring.security.oauth2.client.provider.auth0.issuer-uri=https://<your-auth0-domain>/
-spring.security.oauth2.client.registration.auth0.client-id=<client-id>
-spring.security.oauth2.client.registration.auth0.client-secret=<client-secret>
-spring.security.oauth2.client.registration.auth0.scope=openid,profile,email
-auth0.audience=https://<your-auth0-domain>/api/v2/
-----
-
-. Modify the `SecurityFilterChain` bean to enable OIDC authentication.
-+
-[source,java]
-----
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-      ...
-      http.oauth2Login();
-      ...
-  }
-----
-
-. If you start your app, it'll fail with the following error:
-+
-[source,shell]
-----
-Method filterChain in com.example.demo.SecurityConfiguration required a bean of type
-  'org.springframework.security.oauth2.jwt.JwtDecoder' that could not be found.
-----
-+
-TIP: If you'd rather not create a JWT decoder bean, you can use the https://github.com/okta/okta-spring-boot[Okta Spring Boot starter], which has built-in audience validation.
-
-. Add a JWT decoder bean that does audience validation.
-+
-[source,java]
-----
-@Value("${auth0.audience}")
-private String audience;
-
-@Value("${spring.security.oauth2.client.provider.auth0.issuer-uri}")
-private String issuer;
-
-@Bean
-JwtDecoder jwtDecoder() {
-    NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuer);
-
-    OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
-    OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
-    OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
-
-    jwtDecoder.setJwtValidator(withAudience);
-
-    return jwtDecoder;
-}
-----
-
-. Create an `AudienceValidator` class to validate JWTs.
-+
-[source,java]
-----
-class AudienceValidator implements OAuth2TokenValidator<Jwt> {
-    private final String audience;
-
-    AudienceValidator(String audience) {
-        this.audience = audience;
-    }
-
-    public OAuth2TokenValidatorResult validate(Jwt jwt) {
-        OAuth2Error error = new OAuth2Error("invalid_token", "The required audience is missing", null);
-
-        if (jwt.getAudience().contains(audience)) {
-            return OAuth2TokenValidatorResult.success();
-        }
-        return OAuth2TokenValidatorResult.failure(error);
-    }
-}
+okta.oauth2.issuer=https://<your-auth0-domain>/
+okta.oauth2.audience=${okta.oauth2.issuer}api/v2/
+okta.oauth2.client-id=<client-id>
+okta.oauth2.client-secret=<client-secret>
 ----
 
 . Add a `HomeController` to display the user's name after they log in.
@@ -300,6 +212,7 @@ git clone https://github.com/okta-samples/okta-micronaut-sample.git micronaut
 ----
 micronaut.security.token.jwt.enabled: true
 micronaut.security.token.jwt.signatures.jwks.auth0.url: https://<your-auth0-domain>/.well-known/jwks.json
+netty.default.allocator.max-order: 3
 ----
 
 . Run the app:
