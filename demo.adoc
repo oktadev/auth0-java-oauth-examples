@@ -178,9 +178,8 @@ git clone https://github.com/okta-samples/okta-quarkus-sample.git quarkus
 +
 [source,properties]
 ----
-quarkus.oidc.auth-server-url=https://<your-auth0-domain>
-mp.jwt.verify.publickey.location=${quarkus.oidc.auth-server-url}/.well-known/jwks.json
-mp.jwt.verify.issuer=${quarkus.oidc.auth-server-url}
+mp.jwt.verify.issuer=https://<your-auth0-domain>
+mp.jwt.verify.publickey.location=${mp.jwt.verify.issuer}/.well-known/jwks.json
 ----
 
 . Run the app:
