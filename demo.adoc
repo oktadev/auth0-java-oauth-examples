@@ -9,8 +9,8 @@ This demo shows how to build a Spring Boot app and secure it with OAuth 2.0 and 
 
 **Prerequisites**:
 
-- https://sdkman.io/[Java 17]
-- https://github.com/auth0/auth0-cli#installation[Auth0 CLI 1.0.0]+
+- https://sdkman.io/[Java 17]+
+- https://github.com/auth0/auth0-cli#installation[Auth0 CLI]
 - https://httpie.org/doc#installation[HTTPie]
 - https://auth0.com/signup[Auth0 Account]
 
@@ -22,10 +22,8 @@ Use https://start.spring.io/[start.spring.io] to create a new Spring Boot projec
 
 [source,shell]
 ----
-https start.spring.io/starter.tgz \
-  dependencies==web,okta \
-  baseDir==spring-boot \
-| tar -xzvf - && cd spring-boot
+https start.spring.io/starter.tgz dependencies==web,okta \
+  baseDir==spring-boot | tar -xzvf - && cd spring-boot
 ----
 
 NOTE: The https://github.com/okta/okta-spring-boot[Okta Spring Boot starter] includes `oauth2-client` and `oauth2-resource-server`.
@@ -174,12 +172,13 @@ http :8080/hello "Authorization: Bearer $TOKEN"
 git clone https://github.com/okta-samples/okta-quarkus-sample.git quarkus
 ----
 
-. Update `application.properties` to update the public key location. Remove all other properties.
+. Update `application.properties` to use Auth0. Remove all other properties.
 +
 [source,properties]
 ----
-mp.jwt.verify.issuer=https://<your-auth0-domain>
-mp.jwt.verify.publickey.location=${mp.jwt.verify.issuer}/.well-known/jwks.json
+quarkus.oidc.auth-server-url=https://<your-auth0-domain>
+mp.jwt.verify.publickey.location=${quarkus.oidc.auth-server-url}/v1/keys
+mp.jwt.verify.issuer=${quarkus.oidc.auth-server-url}
 ----
 
 . Run the app:
@@ -209,9 +208,7 @@ git clone https://github.com/okta-samples/okta-micronaut-sample.git micronaut
 +
 [source,yaml]
 ----
-micronaut.security.token.jwt.enabled: true
 micronaut.security.token.jwt.signatures.jwks.auth0.url: https://<your-auth0-domain>/.well-known/jwks.json
-netty.default.allocator.max-order: 3
 ----
 
 . Run the app:
