@@ -1,3 +1,1 @@
-micronaut.security.token.jwt.enabled: true
 micronaut.security.token.jwt.signatures.jwks.auth0.url: https://dev-06bzs1cu.us.auth0.com/.well-known/jwks.json
-netty.default.allocator.max-order: 3

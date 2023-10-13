@@ -4,8 +4,8 @@ See link:demo.adoc[this demo script] to learn how these apps were created.
 
 == Prerequisites:
 
-- https://sdkman.io/[Java 17]
-- https://github.com/auth0/auth0-cli#installation[Auth0 CLI 1.0.0]+
+- https://sdkman.io/[Java 17]+
+- https://github.com/auth0/auth0-cli#installation[Auth0 CLI]
 - https://httpie.org/doc#installation[HTTPie]
 - https://auth0.com/signup[Auth0 Account]
 
